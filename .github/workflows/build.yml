@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: 安装打包依赖
-        run: pip install pyinstaller yt-dlp
+        run: pip install pyinstaller yt-dlp certifi
       - name: 打包 EXE
         run: pyinstaller --onefile --windowed --name 云盘图片下载器 --collect-all yt_dlp drive_image_downloader.py
       - name: 上传 EXE
@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: 安装打包依赖
-        run: pip install pyinstaller yt-dlp
+        run: pip install pyinstaller yt-dlp certifi
       - name: 打包 APP
         run: pyinstaller --windowed --name 云盘图片下载器 --collect-all yt_dlp drive_image_downloader.py
       - name: 制作 DMG
