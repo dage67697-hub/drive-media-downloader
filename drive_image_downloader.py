@@ -26,6 +26,16 @@ import urllib.parse
 import urllib.error
 from email.message import Message
 
+# 打包版（PyInstaller）在 Windows / Mac 上可能找不到系统根证书，
+# 导致 HTTPS 证书校验失败；如果打包时带了 certifi，就用它的证书包。
+# 直接运行源码时一般不需要（没装 certifi 也完全不影响）。
+try:
+    import certifi as _certifi
+
+    os.environ.setdefault("SSL_CERT_FILE", _certifi.where())
+except ImportError:
+    _certifi = None
+
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
 
 
