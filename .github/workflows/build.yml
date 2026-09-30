@@ -1,0 +1,68 @@
+name: 打包 EXE 和 DMG
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 安装打包依赖
+        run: pip install pyinstaller yt-dlp
+      - name: 打包 EXE
+        run: pyinstaller --onefile --windowed --name 云盘图片下载器 --collect-all yt_dlp drive_image_downloader.py
+      - name: 上传 EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: dist/云盘图片下载器.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 安装打包依赖
+        run: pip install pyinstaller yt-dlp
+      - name: 打包 APP
+        run: pyinstaller --windowed --name 云盘图片下载器 --collect-all yt_dlp drive_image_downloader.py
+      - name: 制作 DMG
+        run: hdiutil create -volname 云盘图片下载器 -srcfolder "dist/云盘图片下载器.app" -ov -format UDZO "dist/云盘图片下载器.dmg"
+      - name: 上传 DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist/云盘图片下载器.dmg
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: 发布最新版
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: 最新版
+          body: |
+            Windows 用户下载 云盘图片下载器.exe，双击即可运行。
+            Mac 用户下载 云盘图片下载器.dmg，打开后把「云盘图片下载器」拖到应用程序文件夹。
+
+            注意（未签名应用）：
+            - Windows 首次运行若出现 SmartScreen 提示，点「更多信息」→「仍要运行」。
+            - Mac 首次打开若被拦截，右键点击应用 →「打开」即可。
+          files: |
+            artifacts/windows-exe/云盘图片下载器.exe
+            artifacts/macos-dmg/云盘图片下载器.dmg
